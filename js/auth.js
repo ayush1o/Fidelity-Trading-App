@@ -24,8 +24,13 @@ if (profileBtn) {
 
 
 /* ================= API BASE URL ================= */
+/* ✅ AUTO SWITCH (LOCAL + LIVE) */
 
-const API = "http://127.0.0.1:5000/api/auth";
+const API =
+    window.location.hostname === "127.0.0.1" ||
+    window.location.hostname === "localhost"
+        ? "http://127.0.0.1:5000/api/auth"   // local backend
+        : "https://fidelity-trading-app.onrender.com/api/auth"; // live backend
 
 
 /* ================= SIGNUP ================= */
@@ -92,11 +97,13 @@ if (login) {
 
             const result = await res.json();
 
-            if (res.ok) {
+            if (result.success) {
                 localStorage.setItem("token", result.token);
-                localStorage.setItem("username", result.name); // ⭐ save name
+                localStorage.setItem("username", result.name || "");
                 window.location.replace("dashboard.html");
-            } 
+            } else {
+                alert(result.message || "Login failed");
+            }
 
         } catch (err) {
             console.error("Login Error:", err);
