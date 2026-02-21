@@ -5,8 +5,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const token = localStorage.getItem("token");
     const currentPage = window.location.pathname;
 
-    // If already logged in → skip login page
-    if (token && currentPage.includes("login.html")) {
+    // Redirect logged user away from login/signup
+    if (
+        token &&
+        (currentPage.includes("login.html") ||
+         currentPage.includes("signup.html"))
+    ) {
         window.location.replace("dashboard.html");
     }
 });
@@ -24,13 +28,13 @@ if (profileBtn) {
 
 
 /* ================= API BASE URL ================= */
-/* ✅ AUTO SWITCH (LOCAL + LIVE) */
+/* AUTO SWITCH LOCAL + LIVE */
 
 const API =
-    window.location.hostname === "127.0.0.1" ||
-    window.location.hostname === "localhost"
-        ? "http://127.0.0.1:5000/api/auth"   // local backend
-        : "https://fidelity-trading-app.onrender.com/api/auth"; // live backend
+    location.hostname === "127.0.0.1" ||
+    location.hostname === "localhost"
+        ? "http://127.0.0.1:5000/api/auth"
+        : "/api/auth";   // ✅ VERY IMPORTANT (same server on Render)
 
 
 /* ================= SIGNUP ================= */
@@ -45,10 +49,8 @@ if (signup) {
         try {
 
             const data = {
-                name: document.getElementById("name")?.value,
-                dob: document.getElementById("dob")?.value,
-                phone: document.getElementById("phone")?.value,
-                email: document.getElementById("email")?.value,
+                name: document.getElementById("name")?.value.trim(),
+                email: document.getElementById("email")?.value.trim(),
                 password: document.getElementById("password")?.value
             };
 
@@ -86,7 +88,7 @@ if (login) {
 
         try {
 
-            const email = document.getElementById("email")?.value;
+            const email = document.getElementById("email")?.value.trim();
             const password = document.getElementById("password")?.value;
 
             const res = await fetch(`${API}/login`, {
@@ -109,6 +111,19 @@ if (login) {
             console.error("Login Error:", err);
             alert("Server connection error");
         }
+    });
+}
+
+
+/* ================= LOGOUT ================= */
+
+const logoutBtn = document.getElementById("logoutBtn");
+
+if (logoutBtn) {
+    logoutBtn.addEventListener("click", () => {
+        localStorage.removeItem("token");
+        localStorage.removeItem("username");
+        window.location.replace("login.html");
     });
 }
 

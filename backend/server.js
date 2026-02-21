@@ -3,21 +3,20 @@ const cors = require("cors");
 const sqlite3 = require("sqlite3").verbose();
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const path = require("path");
 
 const app = express();
 
-/* ================= CORS FIX ================= */
-app.use(cors({
-    origin: "http://127.0.0.1:5501",
-    methods: ["GET","POST","OPTIONS"],
-    allowedHeaders: ["Content-Type","Authorization"]
-}));
+/* ================= CORS ================= */
+/* allow local + render frontend */
+app.use(cors());
 
 app.use(express.json());
 
 const SECRET = "fidelity-secret";
 
 /* ================= DATABASE ================= */
+
 const db = new sqlite3.Database("./fidelity.db");
 
 db.serialize(() => {
@@ -36,13 +35,28 @@ db.serialize(() => {
 
 });
 
+
+/* ================= SERVE FRONTEND ================= */
+/* serves index.html, css, js, images */
+
+app.use(express.static(path.join(__dirname, "../")));
+
+app.get("/", (req, res) => {
+    res.sendFile(path.join(__dirname, "../index.html"));
+});
+
+
 /* ================= SIGNUP ================= */
+
 app.post("/api/auth/signup", async (req,res)=>{
 
     const {email,password,name} = req.body;
 
     if(!email || !password || !name){
-        return res.status(400).json({success:false,message:"Missing fields"});
+        return res.status(400).json({
+            success:false,
+            message:"Missing fields"
+        });
     }
 
     const hash = await bcrypt.hash(password,10);
@@ -53,7 +67,10 @@ app.post("/api/auth/signup", async (req,res)=>{
         function(err){
 
             if(err){
-                return res.json({success:false,message:"User already exists"});
+                return res.json({
+                    success:false,
+                    message:"User already exists"
+                });
             }
 
             db.run("INSERT INTO wallet(userId) VALUES(?)",[this.lastID]);
@@ -62,13 +79,16 @@ app.post("/api/auth/signup", async (req,res)=>{
 
             res.json({
                 success:true,
-                token
+                token,
+                name
             });
         }
     );
 });
 
+
 /* ================= LOGIN ================= */
+
 app.post("/api/auth/login",(req,res)=>{
 
     const {email,password} = req.body;
@@ -79,29 +99,37 @@ app.post("/api/auth/login",(req,res)=>{
         async(err,user)=>{
 
             if(!user){
-                return res.json({success:false,message:"User not found"});
+                return res.json({
+                    success:false,
+                    message:"User not found"
+                });
             }
 
             const valid = await bcrypt.compare(password,user.password);
 
             if(!valid){
-                return res.json({success:false,message:"Wrong password"});
+                return res.json({
+                    success:false,
+                    message:"Wrong password"
+                });
             }
 
             const token = jwt.sign({id:user.id},SECRET);
 
             res.json({
                 success:true,
-                token
+                token,
+                name:user.name
             });
         }
     );
 });
 
+
 /* ================= SERVER ================= */
+
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
     console.log("✅ Server running on port " + PORT);
 });
-    
