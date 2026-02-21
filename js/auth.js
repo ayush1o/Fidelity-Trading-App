@@ -123,7 +123,7 @@ if (logoutBtn) {
     logoutBtn.addEventListener("click", () => {
         localStorage.removeItem("token");
         localStorage.removeItem("username");
-        window.location.replace("login.html");
+        window.location.replace("index.html");
     });
 }
 
