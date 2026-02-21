@@ -9,7 +9,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 
 <style>
-
 body{
     margin:0;
     font-family:'Poppins',sans-serif;
@@ -21,12 +20,12 @@ body{
 
 /* HEADER */
 .header{
-    background:#fff; /* ✅ fixed */
+    background:none;
     padding:15px 20px;
     display:flex;
     justify-content:space-between;
     align-items:center;
-    border-bottom:1px solid #eee;
+    border-bottom:1px solid none;
 }
 
 .logo{
@@ -46,8 +45,8 @@ body{
 /* FOOTER NAV */
 .bottom-nav{
     height:70px;
-    background:#fff;
-    border-top:1px solid #eee;
+    background:none;
+    border-top:1px none;
     display:flex;
 }
 
@@ -62,77 +61,68 @@ body{
     font-size:12px;
 }
 
-.nav-item span{
-    font-size:22px;
-}
+.nav-item span{font-size:22px;}
 
 .nav-item.active{
     color:#16a34a;
     font-weight:600;
 }
-
 </style>
 </head>
 
 <body>
 
-<!-- HEADER -->
 <header class="header">
     <div class="logo">Fidelity</div>
 </header>
 
-<!-- LOGIN CENTER -->
 <div class="center-area">
 
 <div class="auth-container">
 
-    <h2>Welcome Back</h2>
-    <p>Login to your Fidelity account</p>
+<h2>Welcome Back</h2>
+<p>Login to your Fidelity account</p>
 
-    <!-- ✅ FIXED FORM -->
-    <form id="loginForm">
+<!-- ✅ LOGIN FORM -->
+<form id="loginForm">
 
-        <input id="email" type="email" placeholder="Gmail" required>
+<input id="email" type="email" placeholder="Gmail" required>
+<input id="password" type="password" placeholder="Password" required>
 
-        <input id="password" type="password" placeholder="Password" required>
+<button type="submit">Login</button>
 
-        <button type="submit">Login</button>
+</form>
 
-    </form>
-
-    <div class="switch">
-        Don't have an account ?
-        <a href="signup.html">Sign Up</a>
-    </div>
-
+<div class="switch">
+Don't have an account ?
+<a href="signup.html">Sign Up</a>
 </div>
 
 </div>
+</div>
 
-<!-- FOOTER -->
 <nav class="bottom-nav">
-    <a href="index.html" class="nav-item active">
-        <span>🏠</span>
-        Homepage
-    </a>
+<a href="index.html" class="nav-item active">
+<span>🏠</span>
+Homepage
+</a>
 </nav>
 
 <!-- MARKET BUBBLE OVERLAY -->
 <div class="market-overlay">
+<div class="bubble up">Apple ▲1.2%</div>
+<div class="bubble up">Tesla ▲2.8%</div>
+<div class="bubble up">Reliance ▲1.1%</div>
+<div class="bubble up">Nvidia ▲3.1%</div>
 
-    <div class="bubble up">Apple ▲1.2%</div>
-    <div class="bubble up">Tesla ▲2.8%</div>
-    <div class="bubble up">Reliance ▲1.1%</div>
-    <div class="bubble up">Nvidia ▲3.1%</div>
-
-    <div class="bubble down">Meta ▼1.4%</div>
-    <div class="bubble down">Intel ▼0.9%</div>
-    <div class="bubble down">Wipro ▼0.6%</div>
-    <div class="bubble down">Netflix ▼1.2%</div>
-
+<div class="bubble down">Meta ▼1.4%</div>
+<div class="bubble down">Intel ▼0.9%</div>
+<div class="bubble down">Wipro ▼0.6%</div>
+<div class="bubble down">Netflix ▼1.2%</div>
 </div>
 
-<script src="js/auth.js"></script>
+<!-- ✅ IMPORTANT FIX -->
+<script defer src="js/auth.js"></script>
 
 </body>
 </html>

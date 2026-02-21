@@ -296,7 +296,7 @@ html,body{
     <img src="images/wallet.png" class="nav-icon" id="walletBtn">              
     <span>🔔</span>
     <span id="profileBtn">👤</span>
-    <button onclick="logout()">Logout</button>
+    <button id="logoutBtn">Logout</button>
 
 </div>
 
@@ -344,10 +344,23 @@ html,body{
     </div>
 
     <nav class="bottom-nav">
-        <a href="#" class="nav-item active"><span>🏠</span>Homepage</a>
-        <a href="https://www.google.com/finance/beta?hl=en" class="nav-item"><span>📈</span>Market</a>
-        <a href="#" class="nav-item" id="reviewsBtn">
-    <span>⭐</span>Reviews
+
+    <a href="#" class="nav-item active">
+        <span>🏠</span>
+        Homepage
+    </a>
+
+    <a href="https://www.google.com/finance/beta?hl=en" class="nav-item">
+        <span>📈</span>
+        Market
+    </a>
+
+    <a href="review.html" class="nav-item" id="reviewBtn">
+        <span>⭐</span>
+        Reviews
+    </a>
+
+</nav>
 </a>
 
 </div>
@@ -377,25 +390,22 @@ Submit Review
 
     </div>
 </div>
-
-
 <script>
+/* logout script already there */
+const HOME_PAGE = "index.html";
 
-/* ===== PROTECT DASHBOARD ===== */
-if (!localStorage.getItem("token")) {
-    window.location.href = "login.html";
+const logoutBtn = document.getElementById("logoutBtn");
+if (logoutBtn) {
+    logoutBtn.addEventListener("click", () => {
+        localStorage.removeItem("token");
+        localStorage.removeItem("username");
+        window.location.replace(HOME_PAGE);
+    });
 }
-
-/* ===== LOGOUT FUNCTION ===== */
-function logout() {
-    // remove login session
-    localStorage.removeItem("token");
-
-    // redirect to login page
-    window.location.replace("login.html");
-}
-
 </script>
+
+<!-- ⭐ IMPORTANT -->
+<script src="js/auth.js"></script>
 
 </body>
 </html>
