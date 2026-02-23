@@ -1,3 +1,4 @@
+// ================= API AUTO DETECTION =================
 function getSignupApiCandidates() {
   const host = window.location.hostname;
 
@@ -18,32 +19,33 @@ function getSignupApiCandidates() {
 
 const SIGNUP_API_CANDIDATES = getSignupApiCandidates();
 
+// ================= SIGNUP REQUEST =================
 async function postSignup(payload) {
   let lastError;
 
   for (const url of SIGNUP_API_CANDIDATES) {
     try {
-      console.log('Sending request', url);
+      console.log('Sending request →', url);
+
       const response = await fetch(url, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
 
-      console.log('Response received', response.status);
       const data = await response.json();
       return { response, data };
+
     } catch (error) {
       lastError = error;
-      console.warn('Signup request attempt failed for', url, error.message);
+      console.warn('Failed attempt:', url);
     }
   }
 
   throw lastError || new Error('Unable to reach signup API');
 }
 
+// ================= FORM SUBMIT =================
 document.addEventListener('DOMContentLoaded', () => {
   const signupForm = document.getElementById('signupForm');
 
@@ -54,7 +56,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   signupForm.addEventListener('submit', async (event) => {
     event.preventDefault();
-    console.log('Form submitted');
 
     const name = document.getElementById('name')?.value.trim();
     const dob = document.getElementById('dob')?.value;
@@ -74,7 +75,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     try {
-      const { response, data } = await postSignup({ name, email, password });
+      const { response, data } =
+        await postSignup({ name, email, password });
 
       if (response.ok && data.success) {
         localStorage.setItem('token', data.token);
@@ -84,6 +86,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       alert(data.message || 'Signup failed');
+
     } catch (error) {
       console.error('Signup request failed:', error);
       alert('Server connection error');
