@@ -1,18 +1,48 @@
-function getLoginApiUrl() {
+function getLoginApiCandidates() {
   const host = window.location.hostname;
 
   if (!host || window.location.protocol === 'file:') {
-    return 'http://localhost:5000/api/auth/login';
+    return ['http://localhost:5000/api/auth/login'];
   }
 
   if (host === 'localhost' || host === '127.0.0.1') {
-    return `${window.location.protocol}//${host}:5000/api/auth/login`;
+    return [
+      `${window.location.protocol}//${host}:5000/api/auth/login`,
+      'http://localhost:5000/api/auth/login',
+      '/api/auth/login'
+    ];
   }
 
-  return '/api/auth/login';
+  return ['/api/auth/login', 'http://localhost:5000/api/auth/login'];
 }
 
-const LOGIN_API_URL = getLoginApiUrl();
+const LOGIN_API_CANDIDATES = getLoginApiCandidates();
+
+async function postLogin(payload) {
+  let lastError;
+
+  for (const url of LOGIN_API_CANDIDATES) {
+    try {
+      console.log('Sending request', url);
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+
+      console.log('Response received', response.status);
+      const data = await response.json();
+      return { response, data };
+    } catch (error) {
+      lastError = error;
+      console.warn('Login request attempt failed for', url, error.message);
+    }
+  }
+
+  throw lastError || new Error('Unable to reach login API');
+}
 
 document.addEventListener('DOMContentLoaded', () => {
   const loginForm = document.getElementById('loginForm');
@@ -35,19 +65,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     try {
-      console.log('Sending request', LOGIN_API_URL);
-      const response = await fetch(LOGIN_API_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ email, password })
-      });
-
-      console.log('Response received', response.status);
-
-      const raw = await response.text();
-      const data = raw ? JSON.parse(raw) : {};
+      const { response, data } = await postLogin({ email, password });
 
       if (response.ok && data.success) {
         localStorage.setItem('token', data.token);

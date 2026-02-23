@@ -1,18 +1,48 @@
-function getSignupApiUrl() {
+function getSignupApiCandidates() {
   const host = window.location.hostname;
 
   if (!host || window.location.protocol === 'file:') {
-    return 'http://localhost:5000/api/auth/signup';
+    return ['http://localhost:5000/api/auth/signup'];
   }
 
   if (host === 'localhost' || host === '127.0.0.1') {
-    return `${window.location.protocol}//${host}:5000/api/auth/signup`;
+    return [
+      `${window.location.protocol}//${host}:5000/api/auth/signup`,
+      'http://localhost:5000/api/auth/signup',
+      '/api/auth/signup'
+    ];
   }
 
-  return '/api/auth/signup';
+  return ['/api/auth/signup', 'http://localhost:5000/api/auth/signup'];
 }
 
-const SIGNUP_API_URL = getSignupApiUrl();
+const SIGNUP_API_CANDIDATES = getSignupApiCandidates();
+
+async function postSignup(payload) {
+  let lastError;
+
+  for (const url of SIGNUP_API_CANDIDATES) {
+    try {
+      console.log('Sending request', url);
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+
+      console.log('Response received', response.status);
+      const data = await response.json();
+      return { response, data };
+    } catch (error) {
+      lastError = error;
+      console.warn('Signup request attempt failed for', url, error.message);
+    }
+  }
+
+  throw lastError || new Error('Unable to reach signup API');
+}
 
 document.addEventListener('DOMContentLoaded', () => {
   const signupForm = document.getElementById('signupForm');
@@ -44,19 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     try {
-      console.log('Sending request', SIGNUP_API_URL);
-      const response = await fetch(SIGNUP_API_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ name, email, password })
-      });
-
-      console.log('Response received', response.status);
-
-      const raw = await response.text();
-      const data = raw ? JSON.parse(raw) : {};
+      const { response, data } = await postSignup({ name, email, password });
 
       if (response.ok && data.success) {
         localStorage.setItem('token', data.token);
