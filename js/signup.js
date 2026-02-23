@@ -1,3 +1,5 @@
+const GITHUB_PAGES_API_BASE = 'https://fidelity-trading-app.onrender.com';
+
 function getConfiguredApiBase() {
   if (window.FIDELITY_API_BASE && window.FIDELITY_API_BASE.trim()) {
     return window.FIDELITY_API_BASE.trim().replace(/\/$/, '');
@@ -19,7 +21,7 @@ function getConfiguredApiBase() {
   }
 
   if (host.endsWith('github.io')) {
-    return 'https://fidelity-trading-app.onrender.com';
+    return GITHUB_PAGES_API_BASE;
   }
 
   return window.location.origin;
@@ -27,11 +29,7 @@ function getConfiguredApiBase() {
 
 function getSignupApiCandidates() {
   const base = getConfiguredApiBase();
-  return [
-    `${base}/api/auth/signup`,
-    '/api/auth/signup',
-    'http://localhost:5000/api/auth/signup'
-  ];
+  return [`${base}/api/auth/signup`, '/api/auth/signup', 'http://localhost:5000/api/auth/signup'];
 }
 
 const SIGNUP_API_CANDIDATES = getSignupApiCandidates();
@@ -119,7 +117,7 @@ document.addEventListener('DOMContentLoaded', () => {
       alert(data.message || 'Signup failed');
     } catch (error) {
       console.error('Signup request failed:', error);
-      alert('Server connection error. If frontend is on github.io, set window.FIDELITY_API_BASE to your backend URL.');
+      alert('Server connection error. Configure window.FIDELITY_API_BASE with your backend URL.');
     }
   });
 });

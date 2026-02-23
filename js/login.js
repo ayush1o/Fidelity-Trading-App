@@ -1,3 +1,5 @@
+const GITHUB_PAGES_API_BASE = 'https://fidelity-trading-app.onrender.com';
+
 function getConfiguredApiBase() {
   if (window.FIDELITY_API_BASE && window.FIDELITY_API_BASE.trim()) {
     return window.FIDELITY_API_BASE.trim().replace(/\/$/, '');
@@ -18,9 +20,8 @@ function getConfiguredApiBase() {
     return `${window.location.protocol}//${host}:5000`;
   }
 
-  // Frontend on GitHub Pages requires externally hosted backend.
   if (host.endsWith('github.io')) {
-    return 'https://fidelity-trading-app.onrender.com';
+    return GITHUB_PAGES_API_BASE;
   }
 
   return window.location.origin;
@@ -28,11 +29,7 @@ function getConfiguredApiBase() {
 
 function getLoginApiCandidates() {
   const base = getConfiguredApiBase();
-  return [
-    `${base}/api/auth/login`,
-    '/api/auth/login',
-    'http://localhost:5000/api/auth/login'
-  ];
+  return [`${base}/api/auth/login`, '/api/auth/login', 'http://localhost:5000/api/auth/login'];
 }
 
 const LOGIN_API_CANDIDATES = getLoginApiCandidates();
@@ -64,7 +61,6 @@ async function postLogin(payload) {
       const data = safeJsonParse(raw);
 
       if (!data) {
-        // Not JSON (often a static 404 page) — try next candidate.
         lastError = new Error(`Non-JSON response from ${url}`);
         continue;
       }
@@ -112,7 +108,7 @@ document.addEventListener('DOMContentLoaded', () => {
       alert(data.message || 'Login failed');
     } catch (error) {
       console.error('Login request failed:', error);
-      alert('Server connection error. If frontend is on github.io, set window.FIDELITY_API_BASE to your backend URL.');
+      alert('Server connection error. Configure window.FIDELITY_API_BASE with your backend URL.');
     }
   });
 });

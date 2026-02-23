@@ -7,18 +7,22 @@ const { pool, initializeDatabase } = require('./config/db');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-app.use(cors({
+const corsOptions = {
   origin: process.env.CORS_ORIGIN || true,
-  credentials: true
-}));
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 
 app.get('/api/health', async (_req, res) => {
   try {
     await pool.query('SELECT 1');
-    res.status(200).json({ success: true, message: 'API running' });
+    return res.status(200).json({ success: true, message: 'API running' });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Database unavailable' });
+    return res.status(500).json({ success: false, message: 'Database unavailable' });
   }
 });
 
