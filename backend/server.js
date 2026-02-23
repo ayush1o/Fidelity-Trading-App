@@ -7,9 +7,15 @@ const { pool, initializeDatabase } = require('./config/db');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-app.use(cors({ origin: true, credentials: true }));
+// ===== CORS CONFIG =====
+app.use(cors({
+  origin: process.env.CORS_ORIGIN || true,
+  credentials: true
+}));
+
 app.use(express.json());
 
+// ===== HEALTH CHECK =====
 app.get('/api/health', async (_req, res) => {
   try {
     await pool.query('SELECT 1');
@@ -19,23 +25,30 @@ app.get('/api/health', async (_req, res) => {
   }
 });
 
+// ===== ROUTES =====
 app.use('/api/auth', authRoutes);
+
+// ===== STATIC FRONTEND =====
 app.use(express.static(path.join(__dirname, '..')));
 
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '../index.html'));
 });
 
+// ===== 404 HANDLER =====
 app.use((req, res) => {
   res.status(404).json({ success: false, message: 'Route not found' });
 });
 
+// ===== START SERVER =====
 (async () => {
   try {
     await initializeDatabase();
+
     app.listen(PORT, () => {
       console.log(`✅ Server running on http://localhost:${PORT}`);
     });
+
   } catch (error) {
     console.error('❌ Failed to initialize server:', error.message);
     process.exit(1);

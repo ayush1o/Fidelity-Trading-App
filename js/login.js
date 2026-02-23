@@ -1,5 +1,51 @@
-const LOGIN_API_URL = 'http://localhost:5000/api/auth/login';
+// ================= API AUTO DETECTION =================
+function getLoginApiCandidates() {
+  const host = window.location.hostname;
 
+  if (!host || window.location.protocol === 'file:') {
+    return ['http://localhost:5000/api/auth/login'];
+  }
+
+  if (host === 'localhost' || host === '127.0.0.1') {
+    return [
+      `${window.location.protocol}//${host}:5000/api/auth/login`,
+      'http://localhost:5000/api/auth/login',
+      '/api/auth/login'
+    ];
+  }
+
+  return ['/api/auth/login', 'http://localhost:5000/api/auth/login'];
+}
+
+const LOGIN_API_CANDIDATES = getLoginApiCandidates();
+
+// ================= LOGIN REQUEST =================
+async function postLogin(payload) {
+  let lastError;
+
+  for (const url of LOGIN_API_CANDIDATES) {
+    try {
+      console.log('Sending request →', url);
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await response.json();
+      return { response, data };
+
+    } catch (error) {
+      lastError = error;
+      console.warn('Failed attempt:', url);
+    }
+  }
+
+  throw lastError || new Error('Unable to reach login API');
+}
+
+// ================= FORM SUBMIT =================
 document.addEventListener('DOMContentLoaded', () => {
   const loginForm = document.getElementById('loginForm');
 
@@ -10,7 +56,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   loginForm.addEventListener('submit', async (event) => {
     event.preventDefault();
-    console.log('Form submitted');
 
     const email = document.getElementById('email')?.value.trim();
     const password = document.getElementById('password')?.value;
@@ -21,17 +66,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     try {
-      console.log('Sending request');
-      const response = await fetch(LOGIN_API_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ email, password })
-      });
-
-      console.log('Response received');
-      const data = await response.json();
+      const { response, data } =
+        await postLogin({ email, password });
 
       if (response.ok && data.success) {
         localStorage.setItem('token', data.token);
@@ -41,6 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       alert(data.message || 'Login failed');
+
     } catch (error) {
       console.error('Login request failed:', error);
       alert('Server connection error');

@@ -1,5 +1,51 @@
-const SIGNUP_API_URL = 'http://localhost:5000/api/auth/signup';
+// ================= API AUTO DETECTION =================
+function getSignupApiCandidates() {
+  const host = window.location.hostname;
 
+  if (!host || window.location.protocol === 'file:') {
+    return ['http://localhost:5000/api/auth/signup'];
+  }
+
+  if (host === 'localhost' || host === '127.0.0.1') {
+    return [
+      `${window.location.protocol}//${host}:5000/api/auth/signup`,
+      'http://localhost:5000/api/auth/signup',
+      '/api/auth/signup'
+    ];
+  }
+
+  return ['/api/auth/signup', 'http://localhost:5000/api/auth/signup'];
+}
+
+const SIGNUP_API_CANDIDATES = getSignupApiCandidates();
+
+// ================= SIGNUP REQUEST =================
+async function postSignup(payload) {
+  let lastError;
+
+  for (const url of SIGNUP_API_CANDIDATES) {
+    try {
+      console.log('Sending request →', url);
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await response.json();
+      return { response, data };
+
+    } catch (error) {
+      lastError = error;
+      console.warn('Failed attempt:', url);
+    }
+  }
+
+  throw lastError || new Error('Unable to reach signup API');
+}
+
+// ================= FORM SUBMIT =================
 document.addEventListener('DOMContentLoaded', () => {
   const signupForm = document.getElementById('signupForm');
 
@@ -10,7 +56,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   signupForm.addEventListener('submit', async (event) => {
     event.preventDefault();
-    console.log('Form submitted');
 
     const name = document.getElementById('name')?.value.trim();
     const dob = document.getElementById('dob')?.value;
@@ -30,17 +75,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     try {
-      console.log('Sending request');
-      const response = await fetch(SIGNUP_API_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ name, email, password })
-      });
-
-      console.log('Response received');
-      const data = await response.json();
+      const { response, data } =
+        await postSignup({ name, email, password });
 
       if (response.ok && data.success) {
         localStorage.setItem('token', data.token);
@@ -50,6 +86,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       alert(data.message || 'Signup failed');
+
     } catch (error) {
       console.error('Signup request failed:', error);
       alert('Server connection error');
