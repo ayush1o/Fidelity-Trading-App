@@ -1,135 +1,43 @@
-const express = require("express");
-const cors = require("cors");
-const sqlite3 = require("sqlite3").verbose();
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
-const path = require("path");
+const express = require('express');
+const cors = require('cors');
+const path = require('path');
+const authRoutes = require('./routes/auth');
+const { pool, initializeDatabase } = require('./config/db');
 
 const app = express();
-
-/* ================= CORS ================= */
-/* allow local + render frontend */
-app.use(cors());
-
-app.use(express.json());
-
-const SECRET = "fidelity-secret";
-
-/* ================= DATABASE ================= */
-
-const db = new sqlite3.Database("./fidelity.db");
-
-db.serialize(() => {
-
-    db.run(`CREATE TABLE IF NOT EXISTS users(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        email TEXT UNIQUE,
-        password TEXT,
-        name TEXT
-    )`);
-
-    db.run(`CREATE TABLE IF NOT EXISTS wallet(
-        userId INTEGER,
-        balance INTEGER DEFAULT 0
-    )`);
-
-});
-
-
-/* ================= SERVE FRONTEND ================= */
-/* serves index.html, css, js, images */
-
-app.use(express.static(path.join(__dirname, "../")));
-
-app.get("/", (req, res) => {
-    res.sendFile(path.join(__dirname, "../index.html"));
-});
-
-
-/* ================= SIGNUP ================= */
-
-app.post("/api/auth/signup", async (req,res)=>{
-
-    const {email,password,name} = req.body;
-
-    if(!email || !password || !name){
-        return res.status(400).json({
-            success:false,
-            message:"Missing fields"
-        });
-    }
-
-    const hash = await bcrypt.hash(password,10);
-
-    db.run(
-        "INSERT INTO users(email,password,name) VALUES(?,?,?)",
-        [email,hash,name],
-        function(err){
-
-            if(err){
-                return res.json({
-                    success:false,
-                    message:"User already exists"
-                });
-            }
-
-            db.run("INSERT INTO wallet(userId) VALUES(?)",[this.lastID]);
-
-            const token = jwt.sign({id:this.lastID}, SECRET);
-
-            res.json({
-                success:true,
-                token,
-                name
-            });
-        }
-    );
-});
-
-
-/* ================= LOGIN ================= */
-
-app.post("/api/auth/login",(req,res)=>{
-
-    const {email,password} = req.body;
-
-    db.get(
-        "SELECT * FROM users WHERE email=?",
-        [email],
-        async(err,user)=>{
-
-            if(!user){
-                return res.json({
-                    success:false,
-                    message:"User not found"
-                });
-            }
-
-            const valid = await bcrypt.compare(password,user.password);
-
-            if(!valid){
-                return res.json({
-                    success:false,
-                    message:"Wrong password"
-                });
-            }
-
-            const token = jwt.sign({id:user.id},SECRET);
-
-            res.json({
-                success:true,
-                token,
-                name:user.name
-            });
-        }
-    );
-});
-
-
-/* ================= SERVER ================= */
-
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
-    console.log("✅ Server running on port " + PORT);
+app.use(cors({ origin: true, credentials: true }));
+app.use(express.json());
+
+app.get('/api/health', async (_req, res) => {
+  try {
+    await pool.query('SELECT 1');
+    res.status(200).json({ success: true, message: 'API running' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Database unavailable' });
+  }
 });
+
+app.use('/api/auth', authRoutes);
+app.use(express.static(path.join(__dirname, '..')));
+
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, '../index.html'));
+});
+
+app.use((req, res) => {
+  res.status(404).json({ success: false, message: 'Route not found' });
+});
+
+(async () => {
+  try {
+    await initializeDatabase();
+    app.listen(PORT, () => {
+      console.log(`✅ Server running on http://localhost:${PORT}`);
+    });
+  } catch (error) {
+    console.error('❌ Failed to initialize server:', error.message);
+    process.exit(1);
+  }
+})();
