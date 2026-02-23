@@ -1,25 +1,36 @@
-// ================= API AUTO DETECTION =================
-function getLoginApiCandidates() {
+const GITHUB_PAGES_API_BASE = 'https://fidelity-trading-app.onrender.com';
+
+function getConfiguredApiBase() {
   const host = window.location.hostname;
 
-  if (!host || window.location.protocol === 'file:') {
-    return ['http://localhost:5000/api/auth/login'];
-  }
+  if (window.location.protocol === 'file:' || !host)
+    return 'http://localhost:5000';
 
-  if (host === 'localhost' || host === '127.0.0.1') {
-    return [
-      `${window.location.protocol}//${host}:5000/api/auth/login`,
-      'http://localhost:5000/api/auth/login',
-      '/api/auth/login'
-    ];
-  }
+  if (host === 'localhost' || host === '127.0.0.1')
+    return `${window.location.protocol}//${host}:5000`;
 
-  return ['/api/auth/login', 'http://localhost:5000/api/auth/login'];
+  if (host.endsWith('github.io'))
+    return GITHUB_PAGES_API_BASE;
+
+  return window.location.origin;
+}
+
+function getLoginApiCandidates() {
+  const base = getConfiguredApiBase();
+  return [
+    `${base}/api/auth/login`,
+    '/api/auth/login',
+    'http://localhost:5000/api/auth/login'
+  ];
 }
 
 const LOGIN_API_CANDIDATES = getLoginApiCandidates();
 
-// ================= LOGIN REQUEST =================
+function safeJsonParse(raw) {
+  try { return JSON.parse(raw); }
+  catch { return null; }
+}
+
 async function postLogin(payload) {
   let lastError;
 
@@ -33,37 +44,29 @@ async function postLogin(payload) {
         body: JSON.stringify(payload)
       });
 
-      const data = await response.json();
+      const raw = await response.text();
+      const data = safeJsonParse(raw);
+
+      if (!data) continue;
+
       return { response, data };
 
-    } catch (error) {
-      lastError = error;
-      console.warn('Failed attempt:', url);
+    } catch (err) {
+      lastError = err;
     }
   }
 
   throw lastError || new Error('Unable to reach login API');
 }
 
-// ================= FORM SUBMIT =================
 document.addEventListener('DOMContentLoaded', () => {
   const loginForm = document.getElementById('loginForm');
 
-  if (!loginForm) {
-    console.error('Login form not found');
-    return;
-  }
+  loginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
 
-  loginForm.addEventListener('submit', async (event) => {
-    event.preventDefault();
-
-    const email = document.getElementById('email')?.value.trim();
-    const password = document.getElementById('password')?.value;
-
-    if (!email || !password) {
-      alert('Please enter email and password');
-      return;
-    }
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
 
     try {
       const { response, data } =
@@ -73,13 +76,12 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('token', data.token);
         localStorage.setItem('username', data.user?.name || '');
         window.location.href = 'dashboard.html';
-        return;
+      } else {
+        alert(data.message || 'Login failed');
       }
 
-      alert(data.message || 'Login failed');
-
     } catch (error) {
-      console.error('Login request failed:', error);
+      console.error(error);
       alert('Server connection error');
     }
   });

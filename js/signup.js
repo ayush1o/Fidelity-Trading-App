@@ -1,25 +1,36 @@
-// ================= API AUTO DETECTION =================
-function getSignupApiCandidates() {
+const GITHUB_PAGES_API_BASE = 'https://fidelity-trading-app.onrender.com';
+
+function getConfiguredApiBase() {
   const host = window.location.hostname;
 
-  if (!host || window.location.protocol === 'file:') {
-    return ['http://localhost:5000/api/auth/signup'];
-  }
+  if (window.location.protocol === 'file:' || !host)
+    return 'http://localhost:5000';
 
-  if (host === 'localhost' || host === '127.0.0.1') {
-    return [
-      `${window.location.protocol}//${host}:5000/api/auth/signup`,
-      'http://localhost:5000/api/auth/signup',
-      '/api/auth/signup'
-    ];
-  }
+  if (host === 'localhost' || host === '127.0.0.1')
+    return `${window.location.protocol}//${host}:5000`;
 
-  return ['/api/auth/signup', 'http://localhost:5000/api/auth/signup'];
+  if (host.endsWith('github.io'))
+    return GITHUB_PAGES_API_BASE;
+
+  return window.location.origin;
+}
+
+function getSignupApiCandidates() {
+  const base = getConfiguredApiBase();
+  return [
+    `${base}/api/auth/signup`,
+    '/api/auth/signup',
+    'http://localhost:5000/api/auth/signup'
+  ];
 }
 
 const SIGNUP_API_CANDIDATES = getSignupApiCandidates();
 
-// ================= SIGNUP REQUEST =================
+function safeJsonParse(raw) {
+  try { return JSON.parse(raw); }
+  catch { return null; }
+}
+
 async function postSignup(payload) {
   let lastError;
 
@@ -33,41 +44,32 @@ async function postSignup(payload) {
         body: JSON.stringify(payload)
       });
 
-      const data = await response.json();
+      const raw = await response.text();
+      const data = safeJsonParse(raw);
+
+      if (!data) continue;
+
       return { response, data };
 
-    } catch (error) {
-      lastError = error;
-      console.warn('Failed attempt:', url);
+    } catch (err) {
+      lastError = err;
     }
   }
 
   throw lastError || new Error('Unable to reach signup API');
 }
 
-// ================= FORM SUBMIT =================
 document.addEventListener('DOMContentLoaded', () => {
   const signupForm = document.getElementById('signupForm');
 
-  if (!signupForm) {
-    console.error('Signup form not found');
-    return;
-  }
+  signupForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
 
-  signupForm.addEventListener('submit', async (event) => {
-    event.preventDefault();
-
-    const name = document.getElementById('name')?.value.trim();
-    const dob = document.getElementById('dob')?.value;
-    const phone = document.getElementById('phone')?.value.trim();
-    const email = document.getElementById('email')?.value.trim();
-    const password = document.getElementById('password')?.value;
-    const confirmPassword = document.getElementById('confirmPassword')?.value;
-
-    if (!name || !dob || !phone || !email || !password || !confirmPassword) {
-      alert('Please fill in all fields');
-      return;
-    }
+    const name = document.getElementById('name').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    const confirmPassword =
+      document.getElementById('confirmPassword').value;
 
     if (password !== confirmPassword) {
       alert('Passwords do not match');
@@ -82,13 +84,12 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('token', data.token);
         localStorage.setItem('username', data.user?.name || name);
         window.location.href = 'dashboard.html';
-        return;
+      } else {
+        alert(data.message || 'Signup failed');
       }
 
-      alert(data.message || 'Signup failed');
-
     } catch (error) {
-      console.error('Signup request failed:', error);
+      console.error(error);
       alert('Server connection error');
     }
   });
