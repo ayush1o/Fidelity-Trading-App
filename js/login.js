@@ -22,12 +22,7 @@ function getConfiguredApiBase() {
 
 function getLoginApiCandidates() {
   const base = getConfiguredApiBase();
-
-  return [
-    `${base}/api/auth/login`,
-    '/api/auth/login',
-    'http://localhost:5000/api/auth/login'
-  ];
+  return [`${base}/api/auth/login`, '/api/auth/login', 'http://localhost:5000/api/auth/login'];
 }
 
 function safeJsonParse(raw) {
@@ -38,13 +33,12 @@ function safeJsonParse(raw) {
   }
 }
 
-async function postLogin(payload, candidates) {
+async function postLogin(payload) {
   let lastError;
 
-  for (const url of candidates) {
+  for (const url of getLoginApiCandidates()) {
     try {
       console.log('Sending request', url);
-
       const response = await fetch(url, {
         method: 'POST',
         headers: {
@@ -72,18 +66,6 @@ async function postLogin(payload, candidates) {
   throw lastError || new Error('Unable to reach login API');
 }
 
-function maybeAskForApiBaseAndStore() {
-  const host = window.location.hostname;
-  if (!host.endsWith('github.io')) return '';
-
-  const entered = window.prompt('Enter backend API base URL (example: https://your-backend.onrender.com)');
-  const normalized = normalizeBaseUrl(entered);
-  if (!normalized) return '';
-
-  localStorage.setItem('FIDELITY_API_BASE', normalized);
-  return normalized;
-}
-
 document.addEventListener('DOMContentLoaded', () => {
   const loginForm = document.getElementById('loginForm');
   if (!loginForm) return;
@@ -95,10 +77,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const email = document.getElementById('email').value.trim();
     const password = document.getElementById('password').value;
 
-    const candidates = getLoginApiCandidates();
-
     try {
-      const { response, data } = await postLogin({ email, password }, candidates);
+      const { response, data } = await postLogin({ email, password });
 
       if (response.ok && data.success) {
         localStorage.setItem('token', data.token);
@@ -109,25 +89,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     } catch (error) {
       console.error(error);
-
-      const manualBase = maybeAskForApiBaseAndStore();
-      if (manualBase) {
-        try {
-          const manualUrl = `${manualBase}/api/auth/login`;
-          const { response, data } = await postLogin({ email, password }, [manualUrl]);
-          if (response.ok && data.success) {
-            localStorage.setItem('token', data.token);
-            localStorage.setItem('username', data.user?.name || '');
-            window.location.href = 'dashboard.html';
-            return;
-          }
-          alert(data.message || 'Login failed');
-          return;
-        } catch (retryError) {
-          console.error('Manual API base retry failed:', retryError);
-        }
-      }
-
       alert('Server connection error');
     }
   });

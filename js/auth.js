@@ -2,16 +2,16 @@ document.addEventListener('DOMContentLoaded', () => {
   const currentPage = window.location.pathname.split('/').pop() || 'index.html';
   const token = localStorage.getItem('token');
 
-  console.log('[auth] DOM loaded on page:', currentPage);
-
   const authPages = new Set(['index.html', 'login.html', 'signup.html']);
   const protectedPages = new Set(['dashboard.html', 'profile.html', 'wallet.html', 'spin.html']);
 
+  // already logged in -> avoid auth pages
   if (token && authPages.has(currentPage)) {
     window.location.replace('dashboard.html');
     return;
   }
 
+  // no token -> protect private pages
   if (!token && protectedPages.has(currentPage)) {
     window.location.replace('index.html');
     return;
@@ -19,10 +19,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const profileBtn = document.getElementById('profileBtn');
   if (profileBtn) {
-    console.log('[auth] profileBtn found, attaching click listener');
     profileBtn.addEventListener('click', (event) => {
       event.preventDefault();
-      console.log('[auth] profileBtn clicked -> profile.html');
       window.location.href = 'profile.html';
     });
   }
@@ -37,8 +35,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   const walletBtn = document.getElementById('walletBtn');
-  if (walletBtn) walletBtn.onclick = () => (location.href = 'wallet.html');
+  if (walletBtn) walletBtn.onclick = () => (window.location.href = 'wallet.html');
 
   const spinWheel = document.getElementById('spinWheel');
-  if (spinWheel) spinWheel.onclick = () => (location.href = 'spin.html');
+  if (spinWheel) spinWheel.onclick = () => (window.location.href = 'spin.html');
 });

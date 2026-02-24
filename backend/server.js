@@ -34,12 +34,12 @@ app.use('/api/auth', authRoutes);
 // ===== STATIC FRONTEND =====
 app.use(express.static(path.join(__dirname, '..')));
 
-app.get('/', (req, res) => {
+app.get('/', (_req, res) => {
   res.sendFile(path.join(__dirname, '../index.html'));
 });
 
 // ===== 404 HANDLER =====
-app.use((req, res) => {
+app.use((_req, res) => {
   res.status(404).json({ success: false, message: 'Route not found' });
 });
 
