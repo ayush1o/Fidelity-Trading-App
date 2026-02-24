@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Fidelity | Wallet</title>
+<meta name="description" content="Educational trading dashboard UI demo project for learning web development. Not a real trading platform.">
+<title>Trading Dashboard Demo | Wallet Simulator</title>
 
 <style>
 
@@ -169,7 +170,7 @@ body{
 <div class="container">
 
 <header class="header">
-<div class="logo">Fidelity Wallet</div>
+<div class="logo">Demo Wallet Simulator</div>
 </header>
 
 <div class="balance-card">
@@ -178,20 +179,20 @@ body{
 </div>
 
 <div class="actions">
-<button class="action-btn deposit" onclick="showDeposit()">Deposit</button>
-<button class="action-btn withdraw" onclick="showWithdraw()">Withdraw</button>
+<button class="action-btn deposit" onclick="showDeposit()">Add Demo Credits</button>
+<button class="action-btn withdraw" onclick="showWithdraw()">Remove Demo Credits</button>
 </div>
 
 <div id="depositBox" class="card" style="display:none;">
-<h3>Add Funds</h3>
+<h3>Add Demo Credits</h3>
 <input id="depositAmount" class="input" placeholder="Enter Amount">
-<button class="action-btn deposit" onclick="depositMoney()">Confirm Deposit</button>
+<button class="action-btn deposit" onclick="depositMoney()">Confirm Demo Credit</button>
 </div>
 
 <div id="withdrawBox" class="card" style="display:none;">
-<h3>Withdraw Funds</h3>
+<h3>Remove Demo Credits</h3>
 <input id="withdrawAmount" class="input" placeholder="Enter Amount">
-<button class="action-btn withdraw" onclick="withdrawMoney()">Confirm Withdraw</button>
+<button class="action-btn withdraw" onclick="withdrawMoney()">Confirm Removal</button>
 </div>
 
 <div class="card">
@@ -207,9 +208,9 @@ body{
    WALLET STATE
 ========================= */
 
-let balance = parseFloat(localStorage.getItem("wallet")) || 0;
+let balance = parseFloat(localStorage.getItem("demoWallet")) || 0;
 let transactions =
- JSON.parse(localStorage.getItem("transactions")) || [];
+ JSON.parse(localStorage.getItem("demoTransactions")) || [];
 
 const balanceEl = document.getElementById("balance");
 const historyEl = document.getElementById("history");
@@ -223,7 +224,7 @@ renderHistory();
 ========================= */
 
 function updateBalance(){
- balance = parseFloat(localStorage.getItem("wallet")) || 0;
+ balance = parseFloat(localStorage.getItem("demoWallet")) || 0;
  balanceEl.innerText = "$" + balance.toFixed(2);
 }
 
@@ -306,7 +307,7 @@ function confetti(){
 function saveTransaction(type,amount,status){
 
  transactions =
-  JSON.parse(localStorage.getItem("transactions")) || [];
+  JSON.parse(localStorage.getItem("demoTransactions")) || [];
 
  transactions.unshift({
    type,
@@ -316,7 +317,7 @@ function saveTransaction(type,amount,status){
  });
 
  localStorage.setItem(
-   "transactions",
+   "demoTransactions",
    JSON.stringify(transactions)
  );
 
@@ -331,7 +332,7 @@ function saveTransaction(type,amount,status){
 function renderHistory(){
 
  transactions =
-  JSON.parse(localStorage.getItem("transactions")) || [];
+  JSON.parse(localStorage.getItem("demoTransactions")) || [];
 
  historyEl.innerHTML="";
 
