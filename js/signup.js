@@ -1,35 +1,93 @@
-document.addEventListener('DOMContentLoaded', () => {
+const GITHUB_PAGES_API_BASE =
+  'https://fidelity-trading-app.onrender.com';
+
+function getConfiguredApiBase(){
+  const host = window.location.hostname;
+
+  if (window.location.protocol === 'file:' || !host)
+    return 'http://localhost:5000';
+
+  if (host === 'localhost' || host === '127.0.0.1')
+    return `${window.location.protocol}//${host}:5000`;
+
+  if (host.endsWith('github.io'))
+    return GITHUB_PAGES_API_BASE;
+
+  return window.location.origin;
+}
+
+const SIGNUP_API_CANDIDATES = [
+  `${getConfiguredApiBase()}/api/auth/signup`,
+  '/api/auth/signup',
+  'http://localhost:5000/api/auth/signup'
+];
+
+function safeJsonParse(raw){
+  try { return JSON.parse(raw); }
+  catch { return null; }
+}
+
+async function postSignup(payload){
+
+  for(const url of SIGNUP_API_CANDIDATES){
+    try{
+      console.log('Sending request →',url);
+
+      const response = await fetch(url,{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify(payload)
+      });
+
+      const raw = await response.text();
+      const data = safeJsonParse(raw);
+      if(!data) continue;
+
+      return {response,data};
+    }catch{}
+  }
+
+  throw new Error('Unable to reach signup API');
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+
   const signupForm = document.getElementById('signupForm');
   const nameInput = document.getElementById('name');
   const emailInput = document.getElementById('email');
   const passwordInput = document.getElementById('password');
   const confirmPasswordInput = document.getElementById('confirmPassword');
 
-  if (!signupForm || !nameInput || !emailInput || !passwordInput || !confirmPasswordInput) return;
+  if(!signupForm) return;
+  if(!nameInput || !emailInput || !passwordInput || !confirmPasswordInput) return;
 
-  signupForm.addEventListener('submit', async (e) => {
+  signupForm.addEventListener('submit',async e=>{
     e.preventDefault();
 
-    if (passwordInput.value !== confirmPasswordInput.value) {
+    if(passwordInput.value !== confirmPasswordInput.value){
       alert('Passwords do not match');
       return;
     }
 
-    const { ok, data } = await window.DemoApi.post('/api/auth/signup', {
-      name: nameInput.value,
-      email: emailInput.value,
-      password: passwordInput.value
-    });
+    try{
+      const {response,data} =
+        await postSignup({
+          name:nameInput.value.trim(),
+          email:emailInput.value.trim(),
+          password:passwordInput.value
+        });
 
-    if (ok && data.success) {
-      localStorage.setItem('demoAuthenticated', 'true');
-      localStorage.setItem('demoDisplayName', data.user?.name || 'Demo User');
-      alert(data.message || 'Demo signup complete');
-      window.location.href = 'dashboard.html';
-    } else {
-      alert(data.message || 'Demo signup failed');
+      if(response.ok && data.success){
+        localStorage.setItem('token',data.token);
+        localStorage.setItem('username',data.user?.name||nameInput.value);
+        window.location.href='dashboard.html';
+      }else{
+        alert(data.message||'Signup failed');
+      }
+
+    }catch(err){
+      console.error(err);
+      alert('Server connection error');
     }
-
-    signupForm.reset();
   });
 });
