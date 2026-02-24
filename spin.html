@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spin & Win | Fidelity</title>
+
+<style>
+
+:root{
+    --green:#16a34a;
+    --light-green:#22c55e;
+    --white:#ffffff;
+}
+
+body{
+    margin:0;
+    font-family:Arial, Helvetica, sans-serif;
+    background:var(--white);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+}
+
+/* Container */
+.spin-container{
+    text-align:center;
+}
+
+/* Pointer */
+.pointer{
+    width:0;
+    height:0;
+    border-left:15px solid transparent;
+    border-right:15px solid transparent;
+    border-bottom:30px solid var(--green);
+    margin:auto;
+    margin-bottom:-10px;
+}
+
+/* Wheel */
+.wheel{
+    width:320px;
+    height:320px;
+    border-radius:50%;
+    border:8px solid var(--green);
+    position:relative;
+    transition:transform 4s ease-out;
+
+    background:
+    conic-gradient(
+        var(--green) 0deg 45deg,
+        var(--light-green) 45deg 90deg,
+        var(--green) 90deg 135deg,
+        var(--light-green) 135deg 180deg,
+        var(--green) 180deg 225deg,
+        var(--light-green) 225deg 270deg,
+        var(--green) 270deg 315deg,
+        var(--light-green) 315deg 360deg
+    );
+}
+
+/* Prize text columns */
+.prize{
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform-origin:0 0;
+    font-weight:bold;
+    color:white;
+    font-size:18px;
+}
+
+.prize span{
+    position:absolute;
+    transform:translate(-50%, -140px);
+}
+
+/* Spin Button */
+.spin-btn{
+    margin-top:30px;
+    padding:12px 35px;
+    background:var(--green);
+    border:none;
+    color:white;
+    font-size:18px;
+    border-radius:8px;
+    cursor:pointer;
+}
+
+.reward-text{
+    margin-top:20px;
+    font-size:20px;
+    color:var(--green);
+    font-weight:bold;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="spin-container">
+
+    <div class="pointer"></div>
+
+    <div id="wheel" class="wheel">
+
+        <!-- Column prizes -->
+        <div class="prize" style="transform:rotate(22.5deg)"><span>₹5</span></div>
+        <div class="prize" style="transform:rotate(67.5deg)"><span>₹10</span></div>
+        <div class="prize" style="transform:rotate(112.5deg)"><span>₹20</span></div>
+        <div class="prize" style="transform:rotate(157.5deg)"><span>₹50</span></div>
+        <div class="prize" style="transform:rotate(202.5deg)"><span>₹0</span></div>
+        <div class="prize" style="transform:rotate(247.5deg)"><span>₹15</span></div>
+        <div class="prize" style="transform:rotate(292.5deg)"><span>₹25</span></div>
+        <div class="prize" style="transform:rotate(337.5deg)"><span>₹5</span></div>
+
+    </div>
+
+    <button class="spin-btn" onclick="spinWheel()">SPIN</button>
+
+    <div id="reward" class="reward-text"></div>
+
+</div>
+
+<script>
+
+let spinning = false;
+
+/* wheel rewards order (clockwise) */
+const rewards = ["₹5","₹10","₹20","₹50","₹0","₹15","₹25","₹5"];
+
+function spinWheel(){
+
+    if(spinning) return;
+    spinning = true;
+
+    const wheel = document.getElementById("wheel");
+
+    // 1️⃣ choose winning index (later backend decides)
+    const winIndex = Math.floor(Math.random()*rewards.length);
+
+    // 2️⃣ each slice = 45 degrees
+    const sliceAngle = 360 / rewards.length;
+
+    // pointer is at top → adjust stopping angle
+    const stopAngle = 360 - (winIndex * sliceAngle) - (sliceAngle/2);
+
+    // 3️⃣ add realistic multiple spins
+    const extraSpins = 5 * 360;
+
+    const finalRotation = extraSpins + stopAngle;
+
+    // smooth realistic easing
+    wheel.style.transition =
+        "transform 5s cubic-bezier(0.17, 0.67, 0.12, 0.99)";
+
+    wheel.style.transform = `rotate(${finalRotation}deg)`;
+
+    // 4️⃣ show reward after stop
+    setTimeout(()=>{
+        document.getElementById("reward").innerText =
+            "🎉 You Won " + rewards[winIndex];
+        spinning = false;
+    },5000);
+}
+
+</script>
+
+</body>
+</html>
