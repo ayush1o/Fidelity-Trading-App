@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Fidelity | Wallet</title>
+
+<style>
+
+body{
+    margin:0;
+    font-family:Poppins,sans-serif;
+    background:#f4f6f5;
+    display:flex;
+    justify-content:center;
+}
+
+.container{
+    width:100%;
+    max-width:400px;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+}
+
+/* HEADER */
+.header{
+    padding:18px;
+    text-align:center;
+}
+
+.logo{
+    color:#16a34a;
+    font-size:22px;
+    font-weight:800;
+}
+
+/* BALANCE */
+.balance-card{
+    background:linear-gradient(135deg,#16a34a,#0f7a36);
+    margin:20px;
+    border-radius:20px;
+    padding:25px;
+    color:#fff;
+}
+
+.balance{font-size:32px;font-weight:800;margin-top:10px}
+
+/* BUTTONS */
+.actions{
+    display:flex;
+    gap:10px;
+    margin:0 20px;
+}
+
+.action-btn{
+    flex:1;
+    padding:14px;
+    border:none;
+    border-radius:14px;
+    font-weight:700;
+    cursor:pointer;
+}
+
+.deposit{background:#16a34a;color:#fff}
+.withdraw{background:#ef4444;color:#fff}
+
+/* CARD */
+.card{
+    background:#fff;
+    margin:20px;
+    border-radius:18px;
+    padding:20px;
+    box-shadow:0 10px 25px rgba(0,0,0,.08);
+}
+
+.input{
+    width:100%;
+    padding:8px;
+    margin:10px 0;
+    border-radius:10px;
+    border:1px solid #e5e7eb;
+}
+
+/* HISTORY */
+.tx{
+    display:flex;
+    justify-content:space-between;
+    margin:14px 0;
+}
+
+.credit{color:#16a34a;font-weight:700}
+.debit{color:#ef4444;font-weight:700}
+
+/* SPINNER */
+.spinner{
+    width:40px;
+    height:40px;
+    border:4px solid #eee;
+    border-top:4px solid #16a34a;
+    border-radius:50%;
+    animation:spin 1s linear infinite;
+    margin:auto;
+}
+
+@keyframes spin{
+    to{transform:rotate(360deg);}
+}
+
+/* SUCCESS MODAL */
+.success-overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.6);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    z-index:999;
+}
+
+.success-box{
+    background:#fff;
+    padding:30px;
+    border-radius:20px;
+    text-align:center;
+    width:260px;
+    animation:pop .3s ease;
+}
+
+.checkmark{
+    width:70px;
+    height:70px;
+    border-radius:50%;
+    background:#16a34a;
+    color:#fff;
+    font-size:40px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    margin:auto;
+}
+
+@keyframes pop{
+    from{transform:scale(.7);opacity:0}
+    to{transform:scale(1);opacity:1}
+}
+
+/* CONFETTI */
+.confetti{
+    position:fixed;
+    width:8px;
+    height:8px;
+    top:-10px;
+    animation:fall 2s linear forwards;
+}
+
+@keyframes fall{
+    to{
+        transform:translateY(100vh) rotate(720deg);
+        opacity:0;
+    }
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<header class="header">
+<div class="logo">Fidelity Wallet</div>
+</header>
+
+<div class="balance-card">
+<div>Available Balance</div>
+<div id="balance" class="balance">$0.00</div>
+</div>
+
+<div class="actions">
+<button class="action-btn deposit" onclick="showDeposit()">Deposit</button>
+<button class="action-btn withdraw" onclick="showWithdraw()">Withdraw</button>
+</div>
+
+<div id="depositBox" class="card" style="display:none;">
+<h3>Add Funds</h3>
+<input id="depositAmount" class="input" placeholder="Enter Amount">
+<button class="action-btn deposit" onclick="depositMoney()">Confirm Deposit</button>
+</div>
+
+<div id="withdrawBox" class="card" style="display:none;">
+<h3>Withdraw Funds</h3>
+<input id="withdrawAmount" class="input" placeholder="Enter Amount">
+<button class="action-btn withdraw" onclick="withdrawMoney()">Confirm Withdraw</button>
+</div>
+
+<div class="card">
+<h3>Transaction History</h3>
+<div id="history"></div>
+</div>
+
+</div>
+
+<script>
+
+/* =========================
+   WALLET STATE
+========================= */
+
+let balance = parseFloat(localStorage.getItem("wallet")) || 0;
+let transactions =
+ JSON.parse(localStorage.getItem("transactions")) || [];
+
+const balanceEl = document.getElementById("balance");
+const historyEl = document.getElementById("history");
+
+updateBalance();
+renderHistory();
+
+
+/* =========================
+   BALANCE UPDATE
+========================= */
+
+function updateBalance(){
+ balance = parseFloat(localStorage.getItem("wallet")) || 0;
+ balanceEl.innerText = "$" + balance.toFixed(2);
+}
+
+
+/* =========================
+   TOGGLE BOXES
+========================= */
+
+function showDeposit(){
+ depositBox.style.display="block";
+ withdrawBox.style.display="none";
+}
+
+function showWithdraw(){
+ withdrawBox.style.display="block";
+ depositBox.style.display="none";
+}
+
+
+/* =========================
+   PROCESSING UI
+========================= */
+
+function showProcessing(text){
+ const box=document.createElement("div");
+ box.id="processingBox";
+ box.className="success-overlay";
+ box.innerHTML=`
+  <div class="success-box">
+    <div class="spinner"></div>
+    <p style="margin-top:15px">${text}</p>
+  </div>`;
+ document.body.appendChild(box);
+}
+
+function hideProcessing(){
+ document.getElementById("processingBox")?.remove();
+}
+
+
+/* =========================
+   SUCCESS MODAL
+========================= */
+
+function showSuccess(msg){
+ const box=document.createElement("div");
+ box.className="success-overlay";
+ box.innerHTML=`
+   <div class="success-box">
+     <div class="checkmark">✓</div>
+     <h3>${msg}</h3>
+   </div>`;
+ document.body.appendChild(box);
+
+ confetti();
+ setTimeout(()=>box.remove(),2200);
+}
+
+
+/* =========================
+   CONFETTI
+========================= */
+
+function confetti(){
+ for(let i=0;i<35;i++){
+  const c=document.createElement("div");
+  c.className="confetti";
+  c.style.left=Math.random()*100+"%";
+  c.style.background=`hsl(${Math.random()*360},70%,50%)`;
+  document.body.appendChild(c);
+  setTimeout(()=>c.remove(),2000);
+ }
+}
+
+
+/* =========================
+   SAVE TRANSACTION
+========================= */
+
+function saveTransaction(type,amount,status){
+
+ transactions =
+  JSON.parse(localStorage.getItem("transactions")) || [];
+
+ transactions.unshift({
+   type,
+   amount: Number(amount),
+   status,
+   date:new Date().toLocaleString()
+ });
+
+ localStorage.setItem(
+   "transactions",
+   JSON.stringify(transactions)
+ );
+
+ renderHistory();
+}
+
+
+/* =========================
+   HISTORY UI
+========================= */
+
+function renderHistory(){
+
+ transactions =
+  JSON.parse(localStorage.getItem("transactions")) || [];
+
+ historyEl.innerHTML="";
+
+ if(!transactions.length){
+  historyEl.innerHTML="<p>No transactions yet</p>";
+  return;
+ }
+
+ transactions.forEach(tx=>{
+
+  let statusColor="#16a34a";
+
+  if(tx.status==="Pending") statusColor="#f59e0b";
+  if(tx.status==="Rejected") statusColor="#ef4444";
+
+  const div=document.createElement("div");
+  div.className="tx";
+
+  div.innerHTML=`
+   <div>
+     <div>${tx.type}</div>
+     <small>${tx.date}</small><br>
+     <small style="color:${statusColor};font-weight:700">
+       ${tx.status}
+     </small>
+   </div>
+
+   <div class="${tx.type==="Deposit"?"credit":"debit"}">
+     ${tx.type==="Deposit"?"+":"-"}$${tx.amount}
+   </div>
+  `;
+
+  historyEl.appendChild(div);
+ });
+
+ updateBalance();
+}
+
+
+/* =========================
+   DEPOSIT (ADMIN APPROVAL)
+========================= */
+
+function depositMoney(){
+
+ const amt = parseFloat(depositAmount.value);
+
+ if(!amt || amt<=0){
+   alert("Enter valid amount");
+   return;
+ }
+
+ showProcessing("Submitting Deposit...");
+
+ setTimeout(()=>{
+   hideProcessing();
+
+   // ✅ ONLY pending request
+   saveTransaction("Deposit", amt, "Pending");
+
+   depositAmount.value="";
+   showSuccess("Deposit Request Sent For Approval");
+
+ },1800);
+}
+
+
+/* =========================
+   WITHDRAW (ADMIN APPROVAL)
+========================= */
+
+function withdrawMoney(){
+
+ const amt=parseFloat(withdrawAmount.value);
+
+ if(!amt || amt<=0){
+   alert("Enter valid amount");
+   return;
+ }
+
+ if(amt>balance){
+   alert("Insufficient Balance");
+   return;
+ }
+
+ showProcessing("Submitting Withdrawal...");
+
+ setTimeout(()=>{
+   hideProcessing();
+
+   saveTransaction("Withdraw", amt, "Pending");
+
+   withdrawAmount.value="";
+   showSuccess("Withdrawal Pending Approval");
+
+ },1800);
+}
+
+
+/* =========================
+   AUTO SYNC (ADMIN APPROVAL LIVE)
+========================= */
+
+window.addEventListener("storage",()=>{
+ renderHistory();
+ updateBalance();
+});
+
+</script>
+
+</body>
+</html>
