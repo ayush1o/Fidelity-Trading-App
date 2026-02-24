@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Fedility | Profile</title>
+<meta name="description" content="Educational trading dashboard UI demo project for learning web development. Not a real trading platform.">
+<title>Trading Dashboard Demo | Profile</title>
 
 <link rel="stylesheet" href="css/auth.css">
 
@@ -163,7 +164,7 @@ body{
 <div class="container">
 
 <header class="header">
-<div class="logo">Fedility</div>
+<div class="logo">Trading Dashboard Demo</div>
 </header>
 
 <div class="profile-card">
@@ -187,23 +188,14 @@ body{
 </div>
 
 <div class="settings-card">
-<div class="section-title">Bank Details</div>
+<div class="section-title">Demo Notes</div>
 
-<input class="input" id="accName" placeholder="Account Holder Name">
-<input class="input" id="bankName" placeholder="Bank Name">
-<input class="input" id="branch" placeholder="Branch">
-<input class="input" id="accNumber" placeholder="Account Number">
-<input class="input" id="ifsc" placeholder="IFSC Code">
-
-<button class="save-btn" onclick="saveBank()">Save Bank Details</button>
+<p class="help-text">No banking details are collected in this demo app.</p>
 </div>
 
 <div class="settings-card">
-<div class="section-title">UPI Details</div>
-
-<input class="input" id="upi" placeholder="Enter UPI ID">
-<button class="save-btn" onclick="saveUPI()">Save UPI</button>
-<p id="upiSaved" class="saved-text"></p>
+<div class="section-title">Demo Safety</div>
+<p class="help-text">No real payments, transfers, or investments are available.</p>
 </div>
 
 <button id="logoutBtn" class="logout">Logout</button>
@@ -217,62 +209,26 @@ body{
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-
-    /* 🔒 LOGIN PROTECTION */
-    const token = localStorage.getItem("token");
-    if(!token){
+    const isAuthed = localStorage.getItem("demoAuthenticated") === "true";
+    if(!isAuthed){
         window.location.replace("index.html");
         return;
     }
 
-    /* USER DATA LOAD */
-    const name = localStorage.getItem("username") || "User";
-    const email = localStorage.getItem("email") || "user@email.com";
-    const wallet = localStorage.getItem("wallet") || "0.00";
+    const name = localStorage.getItem("demoDisplayName") || "Demo User";
+    const demoEmail = "admin@demo.com";
+    const wallet = localStorage.getItem("demoWallet") || "0.00";
 
     document.getElementById("username").textContent = name;
-    document.getElementById("useremail").textContent = email;
-    document.getElementById("wallet").textContent = "$" + wallet;
-    document.getElementById("avatar").textContent =
-        name.charAt(0).toUpperCase();
+    document.getElementById("useremail").textContent = demoEmail;
+    document.getElementById("wallet").textContent = "$" + Number(wallet).toFixed(2);
+    document.getElementById("avatar").textContent = name.charAt(0).toUpperCase();
 
-    /* ACCOUNT DETAILS */
-    document.getElementById("fullName").textContent =
-        localStorage.getItem("fullName") || "Not Added";
-
-    document.getElementById("dob").textContent =
-        localStorage.getItem("dob") || "Not Added";
-
-    document.getElementById("phone").textContent =
-        localStorage.getItem("phone") || "Not Added";
-
-    document.getElementById("gmail").textContent =
-        localStorage.getItem("gmail") || email;
+    document.getElementById("fullName").textContent = "Demo User";
+    document.getElementById("dob").textContent = "Not Collected";
+    document.getElementById("phone").textContent = "Not Collected";
+    document.getElementById("gmail").textContent = demoEmail;
 });
-
-/* SAVE BANK */
-function saveBank(){
-    localStorage.setItem("accName", document.getElementById("accName").value);
-    localStorage.setItem("bankName", document.getElementById("bankName").value);
-    localStorage.setItem("branch", document.getElementById("branch").value);
-    localStorage.setItem("accNumber", document.getElementById("accNumber").value);
-    localStorage.setItem("ifsc", document.getElementById("ifsc").value);
-    alert("✅ Bank details saved");
-}
-
-/* SAVE UPI */
-function saveUPI(){
-    const upi = document.getElementById("upi").value;
-    localStorage.setItem("upi", upi);
-    document.getElementById("upiSaved").innerText =
-        "UPI Saved: " + upi;
-}
-
-/* LOGOUT */
-document.getElementById("logoutBtn").onclick = () => {
-    localStorage.clear();
-    window.location.replace("index.html");
-};
 </script>
 
 <script src="js/auth.js"></script>
