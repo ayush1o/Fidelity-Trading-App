@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Fidelity | Profile</title>
+<title>Fedility | Profile</title>
 
 <link rel="stylesheet" href="css/auth.css">
 
@@ -25,7 +25,9 @@ body{
     flex-direction:column;
 }
 
+/* HEADER */
 .header{
+    background:none;
     padding:18px;
     text-align:center;
 }
@@ -36,7 +38,7 @@ body{
     font-size:22px;
 }
 
-/* PROFILE */
+/* PROFILE CARD */
 .profile-card{
     background:#fff;
     margin:20px;
@@ -63,9 +65,9 @@ body{
 .name{margin-top:15px;font-size:20px;font-weight:700;}
 .email{color:#6b7280;font-size:13px;}
 
-.stats,.settings-card{
+.stats{
     background:#fff;
-    margin:20px;
+    margin:0 20px;
     border-radius:18px;
     padding:20px;
     box-shadow:0 10px 25px rgba(0,0,0,.08);
@@ -76,6 +78,14 @@ body{
     justify-content:space-between;
     margin:12px 0;
     font-weight:600;
+}
+
+.settings-card{
+    background:#fff;
+    margin:20px;
+    border-radius:18px;
+    padding:20px;
+    box-shadow:0 10px 25px rgba(0,0,0,.08);
 }
 
 .section-title{
@@ -93,7 +103,7 @@ body{
 
 .input{
     width:100%;
-    padding:8px;
+    padding:6px;
     margin:8px 0;
     border-radius:10px;
     border:1px solid #e5e7eb;
@@ -110,7 +120,14 @@ body{
     cursor:pointer;
 }
 
-.saved-text{font-size:13px;color:#16a34a;margin-top:8px;}
+.saved-text{
+    font-size:13px;
+    color:#16a34a;
+    margin-top:8px;
+}
+
+.help-title{font-weight:700;margin-top:12px;}
+.help-text{font-size:13px;color:#6b7280;}
 
 .logout{
     margin:25px 20px;
@@ -146,7 +163,7 @@ body{
 <div class="container">
 
 <header class="header">
-<div class="logo">Fidelity</div>
+<div class="logo">Fedility</div>
 </header>
 
 <div class="profile-card">
@@ -178,14 +195,14 @@ body{
 <input class="input" id="accNumber" placeholder="Account Number">
 <input class="input" id="ifsc" placeholder="IFSC Code">
 
-<button class="save-btn" id="saveBankBtn">Save Bank Details</button>
+<button class="save-btn" onclick="saveBank()">Save Bank Details</button>
 </div>
 
 <div class="settings-card">
 <div class="section-title">UPI Details</div>
 
 <input class="input" id="upi" placeholder="Enter UPI ID">
-<button class="save-btn" id="saveUPIBtn">Save UPI</button>
+<button class="save-btn" onclick="saveUPI()">Save UPI</button>
 <p id="upiSaved" class="saved-text"></p>
 </div>
 
@@ -208,46 +225,54 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
     }
 
-    /* USER DATA */
+    /* USER DATA LOAD */
     const name = localStorage.getItem("username") || "User";
     const email = localStorage.getItem("email") || "user@email.com";
     const wallet = localStorage.getItem("wallet") || "0.00";
 
-    username.textContent = name;
-    useremail.textContent = email;
-    walletEl = document.getElementById("wallet");
-    walletEl.textContent = "$" + wallet;
-    avatar.textContent = name.charAt(0).toUpperCase();
+    document.getElementById("username").textContent = name;
+    document.getElementById("useremail").textContent = email;
+    document.getElementById("wallet").textContent = "$" + wallet;
+    document.getElementById("avatar").textContent =
+        name.charAt(0).toUpperCase();
 
     /* ACCOUNT DETAILS */
-    fullName.textContent = localStorage.getItem("fullName") || "Not Added";
-    dob.textContent = localStorage.getItem("dob") || "Not Added";
-    phone.textContent = localStorage.getItem("phone") || "Not Added";
-    gmail.textContent = localStorage.getItem("gmail") || email;
+    document.getElementById("fullName").textContent =
+        localStorage.getItem("fullName") || "Not Added";
 
-    /* SAVE BANK */
-    document.getElementById("saveBankBtn").onclick = () => {
-        localStorage.setItem("accName", accName.value);
-        localStorage.setItem("bankName", bankName.value);
-        localStorage.setItem("branch", branch.value);
-        localStorage.setItem("accNumber", accNumber.value);
-        localStorage.setItem("ifsc", ifsc.value);
-        alert("✅ Bank details saved");
-    };
+    document.getElementById("dob").textContent =
+        localStorage.getItem("dob") || "Not Added";
 
-    /* SAVE UPI */
-    document.getElementById("saveUPIBtn").onclick = () => {
-        localStorage.setItem("upi", upi.value);
-        upiSaved.innerText = "UPI Saved: " + upi.value;
-    };
+    document.getElementById("phone").textContent =
+        localStorage.getItem("phone") || "Not Added";
 
-    /* LOGOUT */
-    logoutBtn.onclick = () => {
-        localStorage.clear();
-        window.location.replace("index.html");
-    };
-
+    document.getElementById("gmail").textContent =
+        localStorage.getItem("gmail") || email;
 });
+
+/* SAVE BANK */
+function saveBank(){
+    localStorage.setItem("accName", document.getElementById("accName").value);
+    localStorage.setItem("bankName", document.getElementById("bankName").value);
+    localStorage.setItem("branch", document.getElementById("branch").value);
+    localStorage.setItem("accNumber", document.getElementById("accNumber").value);
+    localStorage.setItem("ifsc", document.getElementById("ifsc").value);
+    alert("✅ Bank details saved");
+}
+
+/* SAVE UPI */
+function saveUPI(){
+    const upi = document.getElementById("upi").value;
+    localStorage.setItem("upi", upi);
+    document.getElementById("upiSaved").innerText =
+        "UPI Saved: " + upi;
+}
+
+/* LOGOUT */
+document.getElementById("logoutBtn").onclick = () => {
+    localStorage.clear();
+    window.location.replace("index.html");
+};
 </script>
 
 <script src="js/auth.js"></script>
