@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Fedility | Profile</title>
+
+<link rel="stylesheet" href="css/auth.css">
+
+<style>
+body{
+    margin:0;
+    font-family:Poppins,sans-serif;
+    background:#f4f6f5;
+    display:flex;
+    justify-content:center;
+}
+
+.container{
+    width:100%;
+    max-width:400px;
+    min-height:100vh;
+    background:#f4f6f5;
+    display:flex;
+    flex-direction:column;
+}
+
+/* HEADER */
+.header{
+    background:none;
+    padding:18px;
+    text-align:center;
+}
+
+.logo{
+    color:#16a34a;
+    font-weight:800;
+    font-size:22px;
+}
+
+/* PROFILE CARD */
+.profile-card{
+    background:#fff;
+    margin:20px;
+    border-radius:18px;
+    padding:25px;
+    text-align:center;
+    box-shadow:0 10px 25px rgba(0,0,0,.08);
+}
+
+.avatar{
+    width:80px;
+    height:80px;
+    border-radius:50%;
+    background:#16a34a;
+    color:#fff;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:32px;
+    font-weight:700;
+    margin:auto;
+}
+
+.name{margin-top:15px;font-size:20px;font-weight:700;}
+.email{color:#6b7280;font-size:13px;}
+
+.stats{
+    background:#fff;
+    margin:0 20px;
+    border-radius:18px;
+    padding:20px;
+    box-shadow:0 10px 25px rgba(0,0,0,.08);
+}
+
+.stat{
+    display:flex;
+    justify-content:space-between;
+    margin:12px 0;
+    font-weight:600;
+}
+
+.settings-card{
+    background:#fff;
+    margin:20px;
+    border-radius:18px;
+    padding:20px;
+    box-shadow:0 10px 25px rgba(0,0,0,.08);
+}
+
+.section-title{
+    font-size:17px;
+    font-weight:700;
+    margin-bottom:15px;
+}
+
+.detail-row{
+    display:flex;
+    justify-content:space-between;
+    margin:10px 0;
+    font-size:14px;
+}
+
+.input{
+    width:100%;
+    padding:6px;
+    margin:8px 0;
+    border-radius:10px;
+    border:1px solid #e5e7eb;
+}
+
+.save-btn{
+    width:100%;
+    padding:12px;
+    border:none;
+    border-radius:8px;
+    background:#16a34a;
+    color:#fff;
+    font-weight:700;
+    cursor:pointer;
+}
+
+.saved-text{
+    font-size:13px;
+    color:#16a34a;
+    margin-top:8px;
+}
+
+.help-title{font-weight:700;margin-top:12px;}
+.help-text{font-size:13px;color:#6b7280;}
+
+.logout{
+    margin:25px 20px;
+    padding:14px;
+    border:none;
+    border-radius:14px;
+    background:#ef4444;
+    color:#fff;
+    font-weight:700;
+    cursor:pointer;
+}
+
+.bottom-nav{
+    margin-top:auto;
+    height:70px;
+    background:#fff;
+    border-top:1px solid #eee;
+    display:flex;
+}
+
+.nav-item{
+    flex:1;
+    text-align:center;
+    padding-top:10px;
+    text-decoration:none;
+    color:#6b7280;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<header class="header">
+<div class="logo">Fedility</div>
+</header>
+
+<div class="profile-card">
+<div id="avatar" class="avatar">U</div>
+<div id="username" class="name">User</div>
+<div id="useremail" class="email">user@email.com</div>
+</div>
+
+<div class="stats">
+<div class="stat"><span>Wallet Balance</span><span id="wallet">$0.00</span></div>
+<div class="stat"><span>Total Reviews</span><span>24</span></div>
+<div class="stat"><span>Account Status</span><span style="color:#16a34a;">Active</span></div>
+</div>
+
+<div class="settings-card">
+<div class="section-title">Account Details</div>
+<div class="detail-row"><span>Full Name</span><span id="fullName">Not Added</span></div>
+<div class="detail-row"><span>DOB</span><span id="dob">Not Added</span></div>
+<div class="detail-row"><span>Phone</span><span id="phone">Not Added</span></div>
+<div class="detail-row"><span>Gmail</span><span id="gmail">Not Added</span></div>
+</div>
+
+<div class="settings-card">
+<div class="section-title">Bank Details</div>
+
+<input class="input" id="accName" placeholder="Account Holder Name">
+<input class="input" id="bankName" placeholder="Bank Name">
+<input class="input" id="branch" placeholder="Branch">
+<input class="input" id="accNumber" placeholder="Account Number">
+<input class="input" id="ifsc" placeholder="IFSC Code">
+
+<button class="save-btn" onclick="saveBank()">Save Bank Details</button>
+</div>
+
+<div class="settings-card">
+<div class="section-title">UPI Details</div>
+
+<input class="input" id="upi" placeholder="Enter UPI ID">
+<button class="save-btn" onclick="saveUPI()">Save UPI</button>
+<p id="upiSaved" class="saved-text"></p>
+</div>
+
+<button id="logoutBtn" class="logout">Logout</button>
+
+<nav class="bottom-nav">
+<a href="dashboard.html" class="nav-item">🏠 Home</a>
+<a href="profile.html" class="nav-item">👤 Profile</a>
+</nav>
+
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+    /* 🔒 LOGIN PROTECTION */
+    const token = localStorage.getItem("token");
+    if(!token){
+        window.location.replace("index.html");
+        return;
+    }
+
+    /* USER DATA LOAD */
+    const name = localStorage.getItem("username") || "User";
+    const email = localStorage.getItem("email") || "user@email.com";
+    const wallet = localStorage.getItem("wallet") || "0.00";
+
+    document.getElementById("username").textContent = name;
+    document.getElementById("useremail").textContent = email;
+    document.getElementById("wallet").textContent = "$" + wallet;
+    document.getElementById("avatar").textContent =
+        name.charAt(0).toUpperCase();
+
+    /* ACCOUNT DETAILS */
+    document.getElementById("fullName").textContent =
+        localStorage.getItem("fullName") || "Not Added";
+
+    document.getElementById("dob").textContent =
+        localStorage.getItem("dob") || "Not Added";
+
+    document.getElementById("phone").textContent =
+        localStorage.getItem("phone") || "Not Added";
+
+    document.getElementById("gmail").textContent =
+        localStorage.getItem("gmail") || email;
+});
+
+/* SAVE BANK */
+function saveBank(){
+    localStorage.setItem("accName", document.getElementById("accName").value);
+    localStorage.setItem("bankName", document.getElementById("bankName").value);
+    localStorage.setItem("branch", document.getElementById("branch").value);
+    localStorage.setItem("accNumber", document.getElementById("accNumber").value);
+    localStorage.setItem("ifsc", document.getElementById("ifsc").value);
+    alert("✅ Bank details saved");
+}
+
+/* SAVE UPI */
+function saveUPI(){
+    const upi = document.getElementById("upi").value;
+    localStorage.setItem("upi", upi);
+    document.getElementById("upiSaved").innerText =
+        "UPI Saved: " + upi;
+}
+
+/* LOGOUT */
+document.getElementById("logoutBtn").onclick = () => {
+    localStorage.clear();
+    window.location.replace("index.html");
+};
+</script>
+
+<script src="js/auth.js"></script>
+
+</body>
+</html>
