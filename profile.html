@@ -3,12 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Fedility | Profile</title>
+<title>Fidelity | Profile</title>
 
 <link rel="stylesheet" href="css/auth.css">
 
 <style>
-
 body{
     margin:0;
     font-family:Poppins,sans-serif;
@@ -26,12 +25,9 @@ body{
     flex-direction:column;
 }
 
-/* HEADER */
 .header{
-    background:none;
     padding:18px;
     text-align:center;
-    box-shadow:(0,0,0,0);
 }
 
 .logo{
@@ -40,7 +36,7 @@ body{
     font-size:22px;
 }
 
-/* PROFILE CARD (UNCHANGED) */
+/* PROFILE */
 .profile-card{
     background:#fff;
     margin:20px;
@@ -64,21 +60,12 @@ body{
     margin:auto;
 }
 
-.name{
-    margin-top:15px;
-    font-size:20px;
-    font-weight:700;
-}
+.name{margin-top:15px;font-size:20px;font-weight:700;}
+.email{color:#6b7280;font-size:13px;}
 
-.email{
-    color:#6b7280;
-    font-size:13px;
-}
-
-/* STATS */
-.stats{
+.stats,.settings-card{
     background:#fff;
-    margin:0 20px;
+    margin:20px;
     border-radius:18px;
     padding:20px;
     box-shadow:0 10px 25px rgba(0,0,0,.08);
@@ -89,15 +76,6 @@ body{
     justify-content:space-between;
     margin:12px 0;
     font-weight:600;
-}
-
-/* SETTINGS CARDS */
-.settings-card{
-    background:#fff;
-    margin:20px;
-    border-radius:18px;
-    padding:20px;
-    box-shadow:0 10px 25px rgba(0,0,0,.08);
 }
 
 .section-title{
@@ -115,11 +93,10 @@ body{
 
 .input{
     width:100%;
-    padding:6px;
+    padding:8px;
     margin:8px 0;
     border-radius:10px;
     border:1px solid #e5e7eb;
-    outline:none;
 }
 
 .save-btn{
@@ -133,23 +110,8 @@ body{
     cursor:pointer;
 }
 
-.saved-text{
-    font-size:13px;
-    color:#16a34a;
-    margin-top:8px;
-}
+.saved-text{font-size:13px;color:#16a34a;margin-top:8px;}
 
-.help-title{
-    font-weight:700;
-    margin-top:12px;
-}
-
-.help-text{
-    font-size:13px;
-    color:#6b7280;
-}
-
-/* LOGOUT */
 .logout{
     margin:25px 20px;
     padding:14px;
@@ -161,7 +123,6 @@ body{
     cursor:pointer;
 }
 
-/* NAV */
 .bottom-nav{
     margin-top:auto;
     height:70px;
@@ -177,7 +138,6 @@ body{
     text-decoration:none;
     color:#6b7280;
 }
-
 </style>
 </head>
 
@@ -186,34 +146,29 @@ body{
 <div class="container">
 
 <header class="header">
-<div class="logo">Fedility</div>
+<div class="logo">Fidelity</div>
 </header>
 
-<!-- PROFILE -->
 <div class="profile-card">
 <div id="avatar" class="avatar">U</div>
 <div id="username" class="name">User</div>
 <div id="useremail" class="email">user@email.com</div>
 </div>
 
-<!-- STATS -->
 <div class="stats">
 <div class="stat"><span>Wallet Balance</span><span id="wallet">$0.00</span></div>
 <div class="stat"><span>Total Reviews</span><span>24</span></div>
 <div class="stat"><span>Account Status</span><span style="color:#16a34a;">Active</span></div>
 </div>
 
-<!-- ACCOUNT DETAILS -->
 <div class="settings-card">
 <div class="section-title">Account Details</div>
-
 <div class="detail-row"><span>Full Name</span><span id="fullName">Not Added</span></div>
 <div class="detail-row"><span>DOB</span><span id="dob">Not Added</span></div>
 <div class="detail-row"><span>Phone</span><span id="phone">Not Added</span></div>
 <div class="detail-row"><span>Gmail</span><span id="gmail">Not Added</span></div>
 </div>
 
-<!-- BANK DETAILS -->
 <div class="settings-card">
 <div class="section-title">Bank Details</div>
 
@@ -223,38 +178,15 @@ body{
 <input class="input" id="accNumber" placeholder="Account Number">
 <input class="input" id="ifsc" placeholder="IFSC Code">
 
-<button class="save-btn" onclick="saveBank()">Save Bank Details</button>
+<button class="save-btn" id="saveBankBtn">Save Bank Details</button>
 </div>
 
-<!-- UPI -->
 <div class="settings-card">
 <div class="section-title">UPI Details</div>
 
 <input class="input" id="upi" placeholder="Enter UPI ID">
-<button class="save-btn" onclick="saveUPI()">Save UPI</button>
+<button class="save-btn" id="saveUPIBtn">Save UPI</button>
 <p id="upiSaved" class="saved-text"></p>
-</div>
-
-<!-- HELP -->
-<div class="settings-card">
-<div class="section-title">Help & Support</div>
-
-<div class="help-title">About Us</div>
-<p class="help-text">
-Fidelity is a modern trading simulation platform designed to provide
-a professional trading experience with wallet and reward systems.
-</p>
-
-<div class="help-title">Contact Us</div>
-<p class="help-text">
-Email: support@fidelitytrade.com<br>
-Phone: +91 90000 00000
-</p>
-
-<div class="help-title">Help Center</div>
-<p class="help-text">
-Facing issues? Contact support and our team will assist you within 24 hours.
-</p>
 </div>
 
 <button id="logoutBtn" class="logout">Logout</button>
@@ -267,55 +199,55 @@ Facing issues? Contact support and our team will assist you within 24 hours.
 </div>
 
 <script>
+document.addEventListener("DOMContentLoaded", () => {
 
-/* USER DATA LOAD */
-const name = localStorage.getItem("username") || "User";
-const email = localStorage.getItem("email") || "user@email.com";
-const wallet = localStorage.getItem("wallet") || "0.00";
+    /* 🔒 LOGIN PROTECTION */
+    const token = localStorage.getItem("token");
+    if(!token){
+        window.location.replace("index.html");
+        return;
+    }
 
-document.getElementById("username").textContent = name;
-document.getElementById("useremail").textContent = email;
-document.getElementById("wallet").textContent = "$" + wallet;
-document.getElementById("avatar").textContent =
-    name.charAt(0).toUpperCase();
+    /* USER DATA */
+    const name = localStorage.getItem("username") || "User";
+    const email = localStorage.getItem("email") || "user@email.com";
+    const wallet = localStorage.getItem("wallet") || "0.00";
 
-/* ACCOUNT DETAILS LOAD */
-document.getElementById("fullName").textContent =
-    localStorage.getItem("fullName") || "Not Added";
+    username.textContent = name;
+    useremail.textContent = email;
+    walletEl = document.getElementById("wallet");
+    walletEl.textContent = "$" + wallet;
+    avatar.textContent = name.charAt(0).toUpperCase();
 
-document.getElementById("dob").textContent =
-    localStorage.getItem("dob") || "Not Added";
+    /* ACCOUNT DETAILS */
+    fullName.textContent = localStorage.getItem("fullName") || "Not Added";
+    dob.textContent = localStorage.getItem("dob") || "Not Added";
+    phone.textContent = localStorage.getItem("phone") || "Not Added";
+    gmail.textContent = localStorage.getItem("gmail") || email;
 
-document.getElementById("phone").textContent =
-    localStorage.getItem("phone") || "Not Added";
+    /* SAVE BANK */
+    document.getElementById("saveBankBtn").onclick = () => {
+        localStorage.setItem("accName", accName.value);
+        localStorage.setItem("bankName", bankName.value);
+        localStorage.setItem("branch", branch.value);
+        localStorage.setItem("accNumber", accNumber.value);
+        localStorage.setItem("ifsc", ifsc.value);
+        alert("✅ Bank details saved");
+    };
 
-document.getElementById("gmail").textContent =
-    localStorage.getItem("gmail") || email;
+    /* SAVE UPI */
+    document.getElementById("saveUPIBtn").onclick = () => {
+        localStorage.setItem("upi", upi.value);
+        upiSaved.innerText = "UPI Saved: " + upi.value;
+    };
 
-/* SAVE BANK */
-function saveBank(){
-    localStorage.setItem("accName", accName.value);
-    localStorage.setItem("bankName", bankName.value);
-    localStorage.setItem("branch", branch.value);
-    localStorage.setItem("accNumber", accNumber.value);
-    localStorage.setItem("ifsc", ifsc.value);
-    alert("✅ Bank details saved");
-}
+    /* LOGOUT */
+    logoutBtn.onclick = () => {
+        localStorage.clear();
+        window.location.replace("index.html");
+    };
 
-/* SAVE UPI */
-function saveUPI(){
-    const upi = document.getElementById("upi").value;
-    localStorage.setItem("upi", upi);
-    document.getElementById("upiSaved").innerText =
-        "UPI Saved: " + upi;
-}
-
-/* LOGOUT */
-document.getElementById("logoutBtn").onclick = () => {
-    localStorage.clear();
-    window.location.href = "index.html";
-};
-
+});
 </script>
 
 <script src="js/auth.js"></script>
