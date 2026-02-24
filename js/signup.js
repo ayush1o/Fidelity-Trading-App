@@ -53,12 +53,18 @@ async function postSignup(payload){
 document.addEventListener('DOMContentLoaded',()=>{
 
   const signupForm = document.getElementById('signupForm');
+  const nameInput = document.getElementById('name');
+  const emailInput = document.getElementById('email');
+  const passwordInput = document.getElementById('password');
+  const confirmPasswordInput = document.getElementById('confirmPassword');
+
   if(!signupForm) return;
+  if(!nameInput || !emailInput || !passwordInput || !confirmPasswordInput) return;
 
   signupForm.addEventListener('submit',async e=>{
     e.preventDefault();
 
-    if(password.value !== confirmPassword.value){
+    if(passwordInput.value !== confirmPasswordInput.value){
       alert('Passwords do not match');
       return;
     }
@@ -66,14 +72,14 @@ document.addEventListener('DOMContentLoaded',()=>{
     try{
       const {response,data} =
         await postSignup({
-          name:name.value.trim(),
-          email:email.value.trim(),
-          password:password.value
+          name:nameInput.value.trim(),
+          email:emailInput.value.trim(),
+          password:passwordInput.value
         });
 
       if(response.ok && data.success){
         localStorage.setItem('token',data.token);
-        localStorage.setItem('username',data.user?.name||name.value);
+        localStorage.setItem('username',data.user?.name||nameInput.value);
         window.location.href='dashboard.html';
       }else{
         alert(data.message||'Signup failed');

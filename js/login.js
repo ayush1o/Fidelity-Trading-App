@@ -53,7 +53,11 @@ async function postLogin(payload){
 document.addEventListener('DOMContentLoaded',()=>{
 
   const loginForm = document.getElementById('loginForm');
+  const emailInput = document.getElementById('email');
+  const passwordInput = document.getElementById('password');
+
   if(!loginForm) return;
+  if(!emailInput || !passwordInput) return;
 
   loginForm.addEventListener('submit',async e=>{
     e.preventDefault();
@@ -61,8 +65,8 @@ document.addEventListener('DOMContentLoaded',()=>{
     try{
       const {response,data} =
         await postLogin({
-          email: email.value.trim(),
-          password: password.value
+          email: emailInput.value.trim(),
+          password: passwordInput.value
         });
 
       if(response.ok && data.success){
